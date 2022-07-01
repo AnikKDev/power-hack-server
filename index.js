@@ -24,8 +24,17 @@ async function run() {
 
         // get all billing list
         app.get('/billing-list', async (req, res) => {
+            const page = parseInt(req.query.page);
+            const size = parseInt(req.query.size);
+            // console.log(page, size);
             const query = {};
-            const billinglist = await billingCollection.find(query).toArray();
+            let billinglist;
+            if (page || size) {
+                billinglist = await billingCollection.find(query).skip(page * size).limit(size).toArray();
+            } else {
+                billinglist = await billingCollection.find(query).toArray();
+            }
+            // const billinglist = await billingCollection.find(query).toArray();
             res.send(billinglist);
         })
         // add billing data
@@ -53,6 +62,11 @@ async function run() {
             const query = { _id: ObjectId(id) };
             const result = await billingCollection.deleteOne(query);
             res.send(result);
+        })
+        // pagination
+        app.get('/productCount', async (req, res) => {
+            const count = await billingCollection.estimatedDocumentCount();
+            res.send({ count })
         })
 
 
